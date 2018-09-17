@@ -19,6 +19,7 @@ import com.squareup.otto.Subscribe;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 import timer.anthony.com.loltimer.kitDev.MyApplication;
@@ -28,6 +29,7 @@ import timer.anthony.com.loltimer.kitDev.exception.ExceptionA;
 import timer.anthony.com.loltimer.kitDev.log.LogUtils;
 import timer.anthony.com.loltimer.model.WSUtils;
 import timer.anthony.com.loltimer.model.beans.GameBean;
+import timer.anthony.com.loltimer.model.beans.PlayerBean;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
     private CardView cvPseudo;
     private Chronometer chronometer;
     private LinearLayout ll_top;
+
+    private ArrayList<GestionRowPlayer> gestionRowPlayers;
 
     //outils
     private MonAT monAt;
@@ -55,6 +59,13 @@ public class MainActivity extends AppCompatActivity {
         cvPseudo = findViewById(R.id.cvPseudo);
         chronometer = findViewById(R.id.chronometer);
         ll_top = findViewById(R.id.ll_top);
+
+        gestionRowPlayers = new ArrayList<>();
+        gestionRowPlayers.add(new GestionRowPlayer(findViewById(R.id.rowP1)));
+        gestionRowPlayers.add(new GestionRowPlayer(findViewById(R.id.rowP2)));
+        gestionRowPlayers.add(new GestionRowPlayer(findViewById(R.id.rowP3)));
+        gestionRowPlayers.add(new GestionRowPlayer(findViewById(R.id.rowP4)));
+        gestionRowPlayers.add(new GestionRowPlayer(findViewById(R.id.rowP5)));
 
         MyApplication.getBus().register(this);
 
@@ -164,6 +175,10 @@ public class MainActivity extends AppCompatActivity {
             cvPseudo.setVisibility(View.GONE);
             ll_top.setVisibility(View.VISIBLE);
             chronometer.setVisibility(View.VISIBLE);
+            for (int i = 0; i < gestionRowPlayers.size() && i < gameBean.getPlayers().size(); i++) {
+                PlayerBean playerBean = gameBean.getPlayers().get(i);
+                GestionRowPlayer gestionRowPlayer = gestionRowPlayers.get(i);
+            }
         }
         else {
             cvPseudo.setVisibility(View.VISIBLE);
@@ -173,6 +188,10 @@ public class MainActivity extends AppCompatActivity {
 
         //On remplit les cellules
 
+        //        for (GestionRowPlayer player : gestionRowPlayers) {
+        //            Glide.with(this).load().into(imageView);
+        //            player.ivChamp
+        //        }
     }
 
     /* ---------------------------------

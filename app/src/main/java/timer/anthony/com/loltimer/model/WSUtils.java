@@ -21,7 +21,7 @@ public class WSUtils {
 
     private static final String HEADER_KEY = "X-Riot-Token";
 
-    private static final String API_KEY = "RGAPI-6b88946a-de5f-41db-958b-31ca239be5c8";
+    private static final String API_KEY = "RGAPI-4163f05b-3c1c-4a2c-bb71-4cee04073132";
     private static final String GET_PLAYER_INFO = "https://euw1.api.riotgames.com/lol/summoner/v3/summoners/by-name/";
 
     private static final String GET_SPECTATOR_INFO = "https://euw1.api.riotgames.com/lol/spectator/v3/active-games/by-summoner/";
