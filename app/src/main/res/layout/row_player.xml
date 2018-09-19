@@ -53,6 +53,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:adjustViewBounds="true"
+            android:background="?selectableItemBackground"
             android:padding="5dp"
             app:srcCompat="@drawable/ic_launcher_background"/>
 
@@ -62,6 +63,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:adjustViewBounds="true"
+            android:background="?selectableItemBackground"
             android:padding="5dp"
             app:srcCompat="@drawable/ic_launcher_background"/>
     </LinearLayout>

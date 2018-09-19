@@ -15,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.squareup.otto.Subscribe;
 
 import org.apache.commons.lang3.StringUtils;
@@ -24,14 +25,16 @@ import java.util.Date;
 
 import timer.anthony.com.loltimer.kitDev.MyApplication;
 import timer.anthony.com.loltimer.kitDev.SharedPreferenceUtils;
+import timer.anthony.com.loltimer.kitDev.Utils.DateUtils;
 import timer.anthony.com.loltimer.kitDev.Utils.OttoEvent;
 import timer.anthony.com.loltimer.kitDev.exception.ExceptionA;
-import timer.anthony.com.loltimer.kitDev.log.LogUtils;
 import timer.anthony.com.loltimer.model.WSUtils;
 import timer.anthony.com.loltimer.model.beans.GameBean;
 import timer.anthony.com.loltimer.model.beans.PlayerBean;
 
 public class MainActivity extends AppCompatActivity {
+    public static final long TIME_24H = 1000 * 60 * 60 * 24;
+    public static final long TIME_3MIN = 1000 * 60 * 3;
 
     private TextView tvResultat;
     private EditText etPseudo;
@@ -152,8 +155,15 @@ public class MainActivity extends AppCompatActivity {
     private void refreshData() {
 
         if (gameBean != null) {
-            long difference = (new Date().getTime() - gameBean.getGameStartTime());
-            chronometer.setBase(SystemClock.elapsedRealtime() - difference);
+            long now = new Date().getTime();
+            long difference = (now - gameBean.getGameStartTime());
+            if (difference < TIME_24H) {
+                chronometer.setBase(SystemClock.elapsedRealtime() - TIME_3MIN);
+            }
+            else {
+                chronometer.setBase(SystemClock.elapsedRealtime() - difference);
+            }
+
             chronometer.start();
         }
 
@@ -175,9 +185,37 @@ public class MainActivity extends AppCompatActivity {
             cvPseudo.setVisibility(View.GONE);
             ll_top.setVisibility(View.VISIBLE);
             chronometer.setVisibility(View.VISIBLE);
+
             for (int i = 0; i < gestionRowPlayers.size() && i < gameBean.getPlayers().size(); i++) {
-                PlayerBean playerBean = gameBean.getPlayers().get(i);
+                final PlayerBean playerBean = gameBean.getPlayers().get(i);
                 GestionRowPlayer gestionRowPlayer = gestionRowPlayers.get(i);
+
+                gestionRowPlayer.ivNext.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        int index = gameBean.getPlayers().indexOf(playerBean);
+                        if (index < gameBean.getPlayers().size() - 1) {
+                            gameBean.getPlayers().remove(index);
+                            gameBean.getPlayers().add(index + 1, playerBean);
+                            refreshScreen();
+                        }
+                    }
+                });
+                gestionRowPlayer.ivPrevious.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        int index = gameBean.getPlayers().indexOf(playerBean);
+                        if (index > 0) {
+                            gameBean.getPlayers().remove(index);
+                            gameBean.getPlayers().add(index - 1, playerBean);
+                            refreshScreen();
+                        }
+                    }
+                });
+
+                Glide.with(this).load(playerBean.getUrlImageChamp()).into(gestionRowPlayer.ivChamp);
+                Glide.with(this).load(playerBean.getSpell1().getUrlImage()).into(gestionRowPlayer.ivSpell1);
+                Glide.with(this).load(playerBean.getSpell2().getUrlImage()).into(gestionRowPlayer.ivSpell2);
             }
         }
         else {
@@ -192,6 +230,11 @@ public class MainActivity extends AppCompatActivity {
         //            Glide.with(this).load().into(imageView);
         //            player.ivChamp
         //        }
+    }
+
+    public void updateGAme(GameBean gameBean) {
+        this.gameBean = gameBean;
+        refreshData();
     }
 
     /* ---------------------------------
@@ -217,7 +260,17 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Object doInBackground(Object[] objects) {
             try {
-                resultat = WSUtils.getSpectatorInfo(pseudo);
+
+                while (true) {
+                    resultat = WSUtils.getSpectatorInfo(pseudo);
+                    if (!DateUtils.isToday(resultat.getGameStartTime())) {
+                        publishProgress(resultat);
+                        SystemClock.sleep(5000);
+                    }
+                    else {
+                        break;
+                    }
+                }
             }
             catch (ExceptionA exceptionA) {
                 exceptionA.printStackTrace();
@@ -225,6 +278,12 @@ public class MainActivity extends AppCompatActivity {
             }
 
             return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Object[] values) {
+            super.onProgressUpdate(values);
+            updateGAme((GameBean) values[0]);
         }
 
         @Override
@@ -241,9 +300,6 @@ public class MainActivity extends AppCompatActivity {
             }
             else if (resultat != null) {
                 gameBean = resultat;
-                LogUtils.w("tag_", "game : " + gameBean.getGameStartTime());
-                LogUtils.w("tag_", "now : " + new Date().getTime());
-                LogUtils.w("tag_", "Difference de temps : " + (new Date().getTime() - gameBean.getGameStartTime()) + "\n");
                 refreshData();
             }
         }
