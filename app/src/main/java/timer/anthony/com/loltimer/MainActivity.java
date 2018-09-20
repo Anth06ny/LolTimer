@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,20 +30,21 @@ import timer.anthony.com.loltimer.kitDev.Utils.DateUtils;
 import timer.anthony.com.loltimer.kitDev.Utils.OttoEvent;
 import timer.anthony.com.loltimer.kitDev.exception.ExceptionA;
 import timer.anthony.com.loltimer.model.WSUtils;
+import timer.anthony.com.loltimer.model.beans.EventBean;
 import timer.anthony.com.loltimer.model.beans.GameBean;
 import timer.anthony.com.loltimer.model.beans.PlayerBean;
 
 public class MainActivity extends AppCompatActivity {
     public static final long TIME_24H = 1000 * 60 * 60 * 24;
-    public static final long TIME_3MIN = 1000 * 60 * 3;
+    public static final long TIME_1MIN = 1000 * 60;
 
+    //Composants graphiques
     private TextView tvResultat;
     private EditText etPseudo;
     private ProgressDialog pd;
     private CardView cvPseudo;
     private Chronometer chronometer;
     private LinearLayout ll_top;
-
     private ArrayList<GestionRowPlayer> gestionRowPlayers;
 
     //outils
@@ -51,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     //Data
     private String message;
     GameBean gameBean;
+    private ArrayList<EventBean> events;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +78,8 @@ public class MainActivity extends AppCompatActivity {
         gameBean = null;
 
         etPseudo.setText(SharedPreferenceUtils.getLastPseudo());
+
+        events = EventBean.getBasicEvent();
 
         refreshScreen();
     }
@@ -157,14 +162,13 @@ public class MainActivity extends AppCompatActivity {
         if (gameBean != null) {
             long now = new Date().getTime();
             long difference = (now - gameBean.getGameStartTime());
-            if (difference < TIME_24H) {
-                chronometer.setBase(SystemClock.elapsedRealtime() - TIME_3MIN);
+            if (difference < 0 || difference > TIME_24H) {
+                chronometer.setBase(SystemClock.elapsedRealtime() - TIME_1MIN);
             }
             else {
                 chronometer.setBase(SystemClock.elapsedRealtime() - difference);
+                chronometer.start();
             }
-
-            chronometer.start();
         }
 
         refreshScreen();
@@ -210,6 +214,28 @@ public class MainActivity extends AppCompatActivity {
                             gameBean.getPlayers().add(index - 1, playerBean);
                             refreshScreen();
                         }
+                    }
+                });
+
+                gestionRowPlayer.ivSpell1.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        long timeEvent = (new Date().getTime() + (playerBean.getSpell1().getCooldownBurn() - Constants.TIME_BEFORE_FLASH) * 1000);
+                        EventBean eventBean = new EventBean(playerBean.getName() + " " + playerBean.getSpell1().getName() + " dans " + Constants.TIME_BEFORE_FLASH
+                                + "secondes", timeEvent);
+                        events.add(eventBean);
+                        EventBean.sortByTime(events);
+                    }
+                });
+
+                gestionRowPlayer.ivSpell1.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        long timeEvent = (new Date().getTime() + (playerBean.getSpell2().getCooldownBurn() - Constants.TIME_BEFORE_FLASH) * 1000);
+                        EventBean eventBean = new EventBean(playerBean.getName() + " " + playerBean.getSpell2().getName() + " dans " + Constants.TIME_BEFORE_FLASH
+                                + "secondes", timeEvent);
+                        events.add(eventBean);
+                        EventBean.sortByTime(events);
                     }
                 });
 
@@ -263,9 +289,12 @@ public class MainActivity extends AppCompatActivity {
 
                 while (true) {
                     resultat = WSUtils.getSpectatorInfo(pseudo);
+                    Log.w("TAG_TIME", "time:" + resultat.getGameStartTime());
+                    Log.w("TAG_TIME", DateUtils.dateToString(new Date(resultat.getGameStartTime()), DateUtils.DATE_FORMAT.ddMMyyyy_HHmm));
+
                     if (!DateUtils.isToday(resultat.getGameStartTime())) {
                         publishProgress(resultat);
-                        SystemClock.sleep(5000);
+                        SystemClock.sleep(3000);
                     }
                     else {
                         break;

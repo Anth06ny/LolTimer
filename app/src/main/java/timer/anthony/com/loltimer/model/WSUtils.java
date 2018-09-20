@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import timer.anthony.com.loltimer.kitDev.exception.ExceptionA;
 import timer.anthony.com.loltimer.kitDev.exception.LogicException;
 import timer.anthony.com.loltimer.kitDev.exception.TechnicalException;
-import timer.anthony.com.loltimer.kitDev.log.LogUtils;
 import timer.anthony.com.loltimer.kitDev.req.ReqHelper;
 import timer.anthony.com.loltimer.model.beans.GameBean;
 import timer.anthony.com.loltimer.model.beans.PlayerBean;
@@ -22,7 +21,7 @@ public class WSUtils {
 
     private static final String HEADER_KEY = "X-Riot-Token";
 
-    private static final String API_KEY = "RGAPI-f0e08f6c-1ada-4e91-8af7-269d6f148b15";
+    private static final String API_KEY = "RGAPI-0c694685-1db0-4f8b-9744-6153c9d8fdd6";
     private static final String GET_PLAYER_INFO = "https://euw1.api.riotgames.com/lol/summoner/v3/summoners/by-name/";
 
     private static final String GET_SPECTATOR_INFO = "https://euw1.api.riotgames.com/lol/spectator/v3/active-games/by-summoner/";
@@ -99,10 +98,10 @@ public class WSUtils {
                 SummonerBean speel2 = SummonerDao.load(participantBean.getSpell2Id());
                 ChampionBean championBean = ChampionDao.load(participantBean.getChampionId());
                 PlayerBean playerBean = new PlayerBean(championBean, speel1, speel2);
+                playerBean.setTeamId(participantBean.getTeamId());
                 list.add(playerBean);
             }
         }
-        LogUtils.w("TAG_", "teamiID :" + teamIDOfPseudo);
 
         //on retire les joueurs de l'equipe du pseudo
         for (int i = list.size() - 1; i >= 0; i--) {

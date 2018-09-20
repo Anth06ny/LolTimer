@@ -19,6 +19,7 @@ public class SummonerBean {
     private String id; //Nom du spell "SummonerBarrier"
     private String name;  //nom du spell "Barrier"
     private long cooldownBurn;
+
     @Id
     private long key; //correspond à l'id qu'il y aura dans les spell des participants
     @Transient

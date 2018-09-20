@@ -11,7 +11,7 @@ import java.util.Date;
 public class DateUtils {
 
     public enum DATE_FORMAT {
-        ddMMyyyy, ddMMyyyy_HHmm, HHmm
+        ddMMyyyy, ddMMyyyy_HHmm, HHmm, ddMMyyyy_HHmmss
     }
 
     /**
@@ -24,6 +24,8 @@ public class DateUtils {
 
             case ddMMyyyy_HHmm:
                 return "yyyy/MM/dd HH:mm";
+            case ddMMyyyy_HHmmss:
+                return "yyyy/MM/dd HH:mm:ss";
             case HHmm:
                 return "HH:mm";
 
@@ -46,6 +48,10 @@ public class DateUtils {
         catch (ParseException e) {
             return null;
         }
+    }
+
+    public static String dateToString(Date date, DATE_FORMAT dateFormat) {
+        return dateToString(date, getFormat(dateFormat));
     }
 
     /**

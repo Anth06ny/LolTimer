@@ -10,7 +10,7 @@ public class PlayerBean {
     private SummonerBean spell2;
     private String name;
     private String urlImageChamp;
-    private int teamId;
+    private long teamId;
 
     public PlayerBean(ChampionBean championBean, SummonerBean spell1, SummonerBean spell2) {
         name = championBean.getName();
@@ -22,11 +22,11 @@ public class PlayerBean {
     public PlayerBean() {
     }
 
-    public int getTeamId() {
+    public long getTeamId() {
         return teamId;
     }
 
-    public void setTeamId(int teamId) {
+    public void setTeamId(long teamId) {
         this.teamId = teamId;
     }
 

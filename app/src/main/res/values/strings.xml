@@ -1,3 +1,43 @@
 <resources>
     <string name="app_name">LolTimer</string>
+
+    <string-array name="event">
+        <item>Level 2, 3 mélés</item>
+        <item>135</item>
+
+        <item>Gank opposé</item>
+        <item>160</item>
+
+        <item>Fin buff</item>
+        <item>220</item>
+
+        <item>Level 3, 3 mélés</item>
+        <item>195</item>
+
+        <item>5 minutes</item>
+        <item>300</item>
+
+        <item>Réapparition buff</item>
+        <item>360</item>
+
+        <item>Gank Départ</item>
+        <item>420</item>
+
+        <item>Level 6</item>
+        <item>470</item>
+
+        <item>Herald</item>
+        <item>540</item>
+
+        <item>10 minutes</item>
+        <item>600</item>
+
+        <item>Nashor dans 40 secondes</item>
+        <item>1160</item>
+
+        <item>20 minutes</item>
+        <item>1200</item>
+
+
+    </string-array>
 </resources>
