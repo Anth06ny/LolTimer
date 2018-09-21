@@ -10,11 +10,11 @@ import timer.anthony.com.loltimer.kitDev.MyApplication;
 public class EventBean {
 
     String texte;
-    long time;
+    long timeInSec;
 
-    public EventBean(String texte, long time) {
+    public EventBean(String texte, long timeInSec) {
         this.texte = texte;
-        this.time = time;
+        this.timeInSec = timeInSec;
     }
 
     public EventBean() {
@@ -38,7 +38,7 @@ public class EventBean {
         Collections.sort(list, new Comparator<EventBean>() {
             @Override
             public int compare(EventBean o1, EventBean o2) {
-                return (int) (o1.time - o2.time);
+                return (int) (o1.timeInSec - o2.timeInSec);
             }
         });
     }
@@ -51,11 +51,11 @@ public class EventBean {
         this.texte = texte;
     }
 
-    public long getTime() {
-        return time;
+    public long getTimeInSec() {
+        return timeInSec;
     }
 
-    public void setTime(long time) {
-        this.time = time;
+    public void setTimeInSec(long timeInSec) {
+        this.timeInSec = timeInSec;
     }
 }

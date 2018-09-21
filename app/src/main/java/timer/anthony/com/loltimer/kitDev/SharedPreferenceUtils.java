@@ -41,4 +41,17 @@ public class SharedPreferenceUtils {
     public static void saveLastPseudo(String pseudo) {
         getSharedPreference().edit().putString(LAST_PSEUDO, pseudo).apply();
     }
+
+    /* ---------------------------------
+//Sauvegarde voix
+// -------------------------------- */
+    private static final String VOIX_KEY = "VOIX_KEY";
+
+    public static String getSaveVoice() {
+        return getSharedPreference().getString(VOIX_KEY, null);
+    }
+
+    public static void saveVoice(String voice) {
+        getSharedPreference().edit().putString(VOIX_KEY, voice).apply();
+    }
 }
