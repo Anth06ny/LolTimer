@@ -2,6 +2,10 @@
     <string name="app_name">LolTimer</string>
 
     <string-array name="event">
+
+        <item>Test 1 minutes</item>
+        <item>60</item>
+
         <item>Level 2, 3 mélés</item>
         <item>135</item>
 
