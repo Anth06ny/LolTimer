@@ -3,7 +3,10 @@ package timer.anthony.com.loltimer;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.SystemClock;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.Voice;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.util.Log;
@@ -23,20 +26,26 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
+import java.util.Set;
 
 import timer.anthony.com.loltimer.kitDev.MyApplication;
 import timer.anthony.com.loltimer.kitDev.SharedPreferenceUtils;
+import timer.anthony.com.loltimer.kitDev.Utils.AlertDialogUtils;
 import timer.anthony.com.loltimer.kitDev.Utils.DateUtils;
 import timer.anthony.com.loltimer.kitDev.Utils.OttoEvent;
 import timer.anthony.com.loltimer.kitDev.exception.ExceptionA;
+import timer.anthony.com.loltimer.kitDev.log.LogUtils;
 import timer.anthony.com.loltimer.model.WSUtils;
 import timer.anthony.com.loltimer.model.beans.EventBean;
 import timer.anthony.com.loltimer.model.beans.GameBean;
 import timer.anthony.com.loltimer.model.beans.PlayerBean;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements TextToSpeech.OnInitListener, AlertDialogUtils.SelectVoiceListener, Chronometer.OnChronometerTickListener {
     public static final long TIME_24H = 1000 * 60 * 60 * 24;
     public static final long TIME_1MIN = 1000 * 60;
+
+    private static final String UTERENCE_ID = "UTERENCE_ID";// Truc demander pour le speech
 
     //Composants graphiques
     private TextView tvResultat;
@@ -49,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
 
     //outils
     private MonAT monAt;
+    private TextToSpeech t1;
+    private Handler handler;
 
     //Data
     private String message;
@@ -81,12 +92,19 @@ public class MainActivity extends AppCompatActivity {
 
         events = EventBean.getBasicEvent();
 
+        t1 = new TextToSpeech(this, this);
+        t1.stop();
+
+        chronometer.setOnChronometerTickListener(this);
+
         refreshScreen();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        t1.stop();
 
         MyApplication.getBus().unregister(this);
         if (pd != null) {
@@ -97,6 +115,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         menu.add(0, 1, 0, "Version").setIcon(R.mipmap.ic_info).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        menu.add(0, 2, 0, "Changer de voix").setIcon(R.mipmap.ic_voice).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -104,6 +124,15 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1) {
             Toast.makeText(this, "Version  : " + SharedPreferenceUtils.getVersionDataDragon(), Toast.LENGTH_LONG).show();
+        }
+        else if (item.getItemId() == 2) {
+            Set<Voice> voices = t1.getVoices();
+            if (voices == null) {
+                Toast.makeText(this, "Syntetiseur vocale non fonctionnel", Toast.LENGTH_LONG).show();
+            }
+            else {
+                AlertDialogUtils.showSelectOneDialog(this, voices, this);
+            }
         }
 
         return super.onOptionsItemSelected(item);
@@ -152,6 +181,60 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, exceptionA.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    /* ---------------------------------
+   // Syntetiseur vocal
+   // -------------------------------- */
+    @Override
+    public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+            t1.setLanguage(Locale.FRANCE);
+            t1.setSpeechRate(0.8f);
+            //La voie sauvegarder
+            String saveVoicename = SharedPreferenceUtils.getSaveVoice();
+            if (saveVoicename == null) {
+                saveVoicename = t1.getVoice().getName();
+            }
+            for (Voice voice : t1.getVoices()) {
+                if (voice.getLocale().getCountry().equals("FR")) {
+                    //Voix séléctionnée
+                    if (voice.getName().equalsIgnoreCase(saveVoicename)) {
+                        t1.setVoice(voice);
+                    }
+                }
+            }
+        }
+        else {
+            Toast.makeText(this, "Erreur d'initialisation de TextToSpeech", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onSelectVoiceListener(Voice voice) {
+        if (voice != null) {
+            t1.setVoice(voice);
+            SharedPreferenceUtils.saveVoice(voice.getName());
+        }
+    }
+
+    /* ---------------------------------
+    // Chrono
+    // -------------------------------- */
+    @Override
+    public void onChronometerTick(Chronometer chronometer) {
+
+        LogUtils.w("TAG_TICK", "tick");
+
+        long time = (SystemClock.elapsedRealtime() - chronometer.getBase()) / 1000;
+        //on parcours les events et on indique
+        for (EventBean eventBean : events) {
+            if (eventBean.getTimeInSec() == time) {
+                LogUtils.w("TAG_TICK", eventBean.getTexte());
+                t1.speak(eventBean.getTexte(), TextToSpeech.QUEUE_ADD, null, UTERENCE_ID);
+                return;
+            }
+        }
     }
 
     /* ---------------------------------
